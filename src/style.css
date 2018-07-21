@@ -1,0 +1,577 @@
+
+
+/*@font-face {
+   font-family: 'MyFont';
+   src:  url('./fontawesome-webfont.woff2') format('woff2'),
+         url('./fontawesome-webfont.woff') format('woff');
+   font-weight: 600;
+   font-style: normal;
+}*/
+
+/*
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+*/
+
+/*.checkcssworking {
+  color: red;
+  background: url('./icon.png');
+  font-family: 'MyFont';
+}*/
+
+/* SVG UI Day and cs_night */
+
+
+
+
+.cs_normal {
+    stroke: black;
+    fill: black;
+    background-color: white;
+    color: black;
+}
+
+.cs_invert {
+    stroke: white;
+    fill: white;
+    background-color: black;
+    color: white;
+}
+
+.cs_night {
+    stroke: red;
+    fill: red;
+    background-color: black;
+    color: red;
+}
+
+
+
+
+
+
+
+.react-grid-layout {
+  position: relative;
+  transition: height 200ms ease;
+}
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top;
+}
+.react-grid-item.cssTransforms {
+  transition-property: transform;
+}
+.react-grid-item.resizing {
+  z-index: 1;
+  will-change: width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 3;
+  will-change: transform;
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: red;
+  opacity: 0.2;
+  transition-duration: 100ms;
+  z-index: 2;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: -6px;
+  right: -6px;
+  cursor: se-resize;
+}
+
+.cs_normal .react-grid-item > .react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-right: 2px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+.cs_invert .react-grid-item > .react-resizable-handle::after, .cs_night .react-grid-item > .react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-right: 2px solid rgba(255, 0, 0, 0.4);
+  border-bottom: 2px solid rgba(255, 0, 0, 0.4);
+}
+
+
+.react-resizable {
+  position: relative;
+}
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSI2cHgiIGhlaWdodD0iNnB4Ij48ZyBvcGFjaXR5PSIwLjMwMiI+PHBhdGggZD0iTSA2IDYgTCAwIDYgTCAwIDQuMiBMIDQgNC4yIEwgNC4yIDQuMiBMIDQuMiAwIEwgNiAwIEwgNiA2IEwgNiA2IFoiIGZpbGw9IiMwMDAwMDAiLz48L2c+PC9zdmc+');
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  cursor: se-resize;
+}
+
+
+.settings {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    right: 40px;
+    bottom: 40px;
+    border: 1px solid rgb(204, 204, 204);
+    background: rgb(255, 255, 255);
+    overflow: auto;
+    border-radius: 10px;
+}
+.cs_invert .settings {
+    border: 1px solid rgb(204, 204, 204);
+    background: rgb(0, 0, 0);
+}
+
+.cs_night .settings {
+    border: 1px solid #c00;
+    background: rgb(0, 0, 0);
+}
+
+.settings_after-open {
+}
+.settings_before-close {
+}
+.settings_before-close {
+
+}
+.settingsOverlay {
+    position: fixed; 
+    top: 0px; 
+    left: 0px; 
+    right: 0px; 
+    bottom: 0px; 
+}
+.cs_normal .settingsOverlay, .cs_night .settingsOverlay {
+    background-color: rgba(150, 150, 150, 0.75);
+}
+
+.cs_invert .settingsOverlay, .cs_night .settingsOverlay {
+    background-color: rgba(50, 50, 50, 0.75);
+}
+.settingsOverlay_after-open {
+
+}
+.settingsOverlay_before-close {
+}
+
+.globalSettingsButton {
+    position: absolute;
+    right: 10px;
+    top: 10px;        
+}
+
+.globalSettingsButton > button {
+    border: none;
+    background-color: inherit;
+    color: inherit;
+    font-size: 16px;
+    outline: none;
+}
+
+
+
+.settingsClose {
+    position: absolute;
+    right: 5px;
+    top: 5px;    
+    background-color: transparent;
+    color: inherit;
+}
+
+.settingsClose > button {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    color: inherit;
+}
+
+.settingsApply {
+    position: absolute;
+    right: 136px;
+    bottom: 17px;
+}
+
+.settingsApply > input {
+    border: solid;
+    font-size: 16px;
+    background-color: #92b3e6;
+    border-color: #a0b2c1;
+    border-width: 1px;
+    border-radius: 5px;
+    padding-top: 8px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 8px;
+}
+
+.cs_invert .settingsApply > input {
+    background-color: #92b3e67a;
+    border-color: #a0b2c187;
+    color: inherit;
+}
+
+.cs_night .settingsApply > input {
+    background-color: #ff0000d4;
+    border-color: #f00;
+    color: #222;
+}
+
+
+.settingsCancel {
+    position: absolute;
+    right: 17px;
+    bottom: 17px;
+}
+
+.settingsCancel > button {
+    background-color: transparent;
+    color: inherit;
+    border: solid #797676;
+    font-size: 16px;
+    border-width: 1px;
+    border-radius: 5px;
+    padding-top: 8px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 8px;
+    outline: none;
+}
+
+.cs_invert .settingsCancel > button {
+    border-color: solid #aaa;
+}
+
+.cs_night .settingsCancel > button {
+    border-color: solid #a00;
+}
+
+.tabControls {
+    position: absolute;
+    font-size: 16px;
+    top: 5px;
+    right: 1px;
+}
+
+
+.tabControls > button {
+    border: none;
+    padding-left: 1px;
+    padding-right: 1px;
+    outline: none;
+    background-color: inherit;
+    color: inherit;
+}
+
+
+.dropDown {
+    position: absolute;
+    left: -1px;
+    top: 29px;
+    padding: 16px;
+    border-top: none;
+    border-left: solid 1px;
+    border-radius: 3px;
+    z-index: 3;
+    border-bottom: solid 1px;
+    border-right: solid 1px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    width: 129px;
+    padding: 2px;
+}
+
+.cs_normal .dropDown {
+    background-color: #ccccccf7;  
+}
+
+.cs_invert .dropDown {
+    background-color: #ccccccf7;  
+}
+.cs_night .dropDown {
+    background-color: #ccccccf7;  
+}
+
+.dropDown > button {
+    border: none;
+    background-color: inherit;
+    color: inherit;
+    outline: none;
+}
+
+
+.cellControls {
+    position: absolute;
+    font-size: 10px;
+    right: -8px;
+    top: -2px;
+    z-index: 1;
+}
+
+.cellControls > button {
+    border: none;  
+    background-color: transparent;
+    color: inherit;
+    outline: none;
+}
+
+.settingsForm {
+    border: 1px solid;
+    position: fixed;
+    left: 90px;
+    right: 25%;
+    top: 90px;
+    padding: 10px;
+    overflow: auto;
+    display: grid;
+    grid-gap: 11px;
+}
+
+.settingsForm label {
+    grid-column: 1 / 2;
+}
+
+.settingsForm input  {
+    grid-column: 2 / 2;
+    background-color: inherit;
+    color: inherit;
+}
+
+.cs_night .settingsForm input  {
+  border-color: #c00;
+}
+
+
+.settingsForm select {
+    grid-column: 2 / 2;
+    background-color: inherit;
+    color: inherit;
+}
+
+.cs_night .settingsForm select  {
+  border-color: #c00;
+}
+
+
+.settingsForm .help {
+    grid-column: 2 / 2;
+   font-size: 10px;
+}
+
+.settingsForm .settingsGroup {
+    display: grid;
+    grid-gap: 11px;
+    grid-column: 2 / 2;
+}
+
+.settingsForm .settingsGroup > div {
+    grid-column: 2 / 2;
+}
+
+
+/* Canvas based instruments */
+
+.cellContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+  right: 0px;  
+}
+
+.instrumentContainer {
+  font-family: sans-serif;
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+}
+.canvasHolder {
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+}
+.instrumentContainer canvas { 
+  border: 1px solid black;
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+}
+.cs_invert .instrumentContainer canvas { 
+  border: 1px solid #aaa;
+}
+.cs_night .instrumentContainer canvas { 
+  border: 1px solid red;
+}
+.cs_normal .dataBoxFill {
+  background: rgba(215,215,215,0.7);      
+}
+
+.cs_invert .dataBoxFill, .cs_night .dataBoxFill  {
+  background: rgba(40,40,40,0.3);      
+}
+
+.dataBox {
+  position: absolute;
+  width: 100px;
+  height: 50px;
+  border-radius: 5px;   
+  border: 1px solid black;
+  font-size: 30px;
+  font-family: sans-serif;
+}
+
+.cs_invert .dataBox {
+  border: 1px solid white;
+}
+.cs_night .dataBox {
+  border: 1px solid red;
+}
+
+.dataBoxFull {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;   
+  border: 1px solid black;
+  font-size: 93px;
+  font-family: sans-serif;
+}
+
+.cs_invert .dataBoxFull {
+  border: 1px solid #aaa;
+}
+
+.cs_night .dataBoxFull {
+  border: 1px solid red;
+}
+
+.dataBoxValue {
+  background-color: inherit;
+  color: inherit;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  overflow: hidden;
+  text-align: center;
+}
+
+
+.dataBoxUnits {
+  background-color: inherit;
+  color: inherit;
+  position: absolute;
+  bottom:  2px;
+  right:  2px; 
+  font-size: 14px;
+}
+.dataBoxTitle {
+  background-color: inherit;
+  color: inherit;
+  position: absolute;
+  bottom:  2px;
+  left:  2px; 
+  font-size: 14px;
+}
+.inputForm {
+  position: absolute;
+  right: 0px;
+}
+.inputForm > label {
+  display: block;
+}
+
+
+
+
+.stripChart .axis {
+    stroke-width: 1;
+}
+
+.cs_normal .stripChart .axis .tick line {
+    stroke: black;
+}
+.cs_invert .stripChart .axis .tick line {
+    stroke: white;
+}
+.cs_night .stripChart .axis .tick line {
+    stroke: red;
+}
+
+.cs_normal .stripChart .axis .tick text {
+    fill: black;
+    font-size: 0.7em;
+}
+.cs_invert .stripChart .axis .tick text {
+    fill: white;
+    font-size: 0.7em;
+}
+.cs_night .stripChart .axis .tick text {
+    fill: red;
+    font-size: 0.7em;
+}
+
+.cs_normal .stripChart .axis .domain {
+    fill: none;
+    stroke: black;
+}
+.cs_invert .stripChart .axis .domain {
+    fill: none;
+    stroke: white;
+}
+.cs_night .stripChart .axis .domain {
+    fill: none;
+    stroke: red;
+}
+
+.cs_normal .stripChart .group {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5;
+}
+.cs_invert .stripChart .group {
+    fill: none;
+    stroke: white;
+    stroke-width: 1.5;
+}
+.cs_night .stripChart .group {
+    fill: none;
+    stroke: red;
+    stroke-width: 1.5;
+}
+
+
+

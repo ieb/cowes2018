@@ -1,0 +1,51 @@
+{
+  "name": "cowes2018",
+  "version": "0.1.11",
+  "description": "Cowes2018",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.prod.js",
+    "watch": "webpack --watch --config webpack.dev.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "marine"
+  ],
+  "author": "Ian Boston",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-react-html-attrs": "^2.1.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-1": "^6.24.1",
+    "clean-webpack-plugin": "^0.1.17",
+    "css-loader": "^0.28.9",
+    "csv-loader": "^2.1.1",
+    "file-loader": "^1.1.6",
+    "html-webpack-plugin": "^2.30.1",
+    "ignore-loader": "^0.1.2",
+    "style-loader": "^0.19.1",
+    "validator-js": "^0.2.1",
+    "webpack": "^3.10.0",
+    "webpack-bundle-analyzer": "^2.9.2",
+    "webpack-merge": "^4.1.1",
+    "xml-loader": "^1.2.1",
+    "babel-preset-es2015": "^6.24.1",
+    "js-quantities": "^1.7.0",
+    "lodash": "^4.17.5",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-grid-layout": "^0.16.3",
+    "react-modal": "^3.1.12",
+    "react-tabs": "^2.2.1",
+    "geodesy": "^1.1.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ieb/ieb.github.com"
+  },
+  "dependencies": {}
+}
