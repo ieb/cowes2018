@@ -24,6 +24,9 @@ body {
 /* SVG UI Day and cs_night */
 
 
+.hidden {
+  display: none;
+}
 
 
 .cs_normal {
