@@ -2,7 +2,8 @@
 "use strict";
 
 import React from 'react';
-import GMap from './GMap.jsx';
+//import GMap from './GMap.jsx';
+import OSMap from './OSMap.jsx';
 import CoursePlan from './CoursePlan.jsx';
 import { LatLonSpherical as LatLon, Dms } from 'geodesy';
 import Qty from 'js-quantities';
@@ -18,7 +19,11 @@ class Course extends React.Component {
   constructor(props) {
     super(props);
     this.props = props;
+    this.stateLiseners = [];
+    /*
     this.gmap = new GMap("AIzaSyC1R7_R3evqRM6gsl1MTrORvGGFtbg9BjY");
+    this.addStateListener(this.gmap);
+    */
     this.coursePlan = new CoursePlan({
         gwd: (+window.localStorage.cowes2018gwd || 0)*Math.PI/180,
         course: window.localStorage.cowes2018Course || "",
@@ -82,10 +87,9 @@ class Course extends React.Component {
     this.toggleChart = this.toggleChart.bind(this);
     this.toggleRacePlan = this.toggleRacePlan.bind(this);
     this.toggleInputs = this.toggleInputs.bind(this);
-    this.updateGmap = this.updateGmap.bind(this);
     this.nextWp = this.nextWp.bind(this);
     this.prevWp = this.prevWp.bind(this);
-    if ( false) {
+    if (false) {
         // real positoin
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(this.getLocation, this.positionError, {
@@ -112,10 +116,7 @@ class Course extends React.Component {
             }
             self.getLocation(position);
         }, 2000)
-
     }
-
-
 
   }
 
@@ -123,7 +124,12 @@ class Course extends React.Component {
 
 
   componentDidMount() {
-    this.gmap.init(this.updateGmap);
+    if ( this.gmap !== undefined ) {
+        var self = this;
+        this.gmap.init(() => {
+            self.gmap.update(this.state);
+        });        
+    }
   }
 
 
@@ -498,8 +504,26 @@ class Course extends React.Component {
     }
   }
 
-  updateGmap() {    
-    this.gmap.update(this.state);
+  addStateListener(l) {
+    this.stateLiseners.push(l);
+  }
+
+  removeStateListener(l) {
+    var newListeners = [];
+    for (var i = 0; i < this.stateLiseners.length; i++) {
+        if ( this.stateLiseners[i] !== l ) {
+            newListeners.push(this.stateLiseners[i]);
+        }
+    };
+    console.log("New Listerners are ",newListeners);
+    this.stateLiseners = newListeners;
+  }
+ 
+
+  notifyStateListeners() {
+    for (var i = 0; i < this.stateLiseners.length; i++) {
+        this.stateLiseners[i].update(this.state);
+    };
   }
 
 
@@ -536,7 +560,9 @@ class Course extends React.Component {
 
   displayMarks() {
     if ( this.state.displayMarks ) {
-        this.gmap.plotMarks(this.state.marksDb);
+        if ( this.gmap !== undefined ) {
+            this.gmap.plotMarks(this.state.marksDb);            
+        }
         return (
             <div>
             <div className="headding" onClick={this.toggleMarks}>{"\u25BF"} Available Marks</div>
@@ -544,7 +570,9 @@ class Course extends React.Component {
             </div>
        );
     } else {
-        this.gmap.clearMarks();
+        if ( this.gmap !== undefined ) {
+            this.gmap.clearMarks();
+        }
         return (
             <div>
             <div className="headding" onClick={this.toggleMarks}>{"\u25B9"} Available Marks</div>
@@ -561,12 +589,19 @@ class Course extends React.Component {
 
   displayChart() {
     if ( this.state.displayChart ) {
-        return (
-            <div>
-            <div className="headding" onClick={this.toggleChart}>{"\u25BF"} Chart</div>
-            <div id="map" ></div>
-            </div>
-       );
+        if ( this.gmap === undefined ) {
+            return (<div>
+                <div className="headding" onClick={this.toggleChart}>{"\u25BF"} Chart</div>
+                <OSMap mapid="osmap" app={this} ></OSMap>
+                </div>);
+        } else {
+            return (
+                <div>
+                <div className="headding" onClick={this.toggleChart}>{"\u25BF"} Chart</div>
+                <div id="map" ></div>
+                </div>
+                );
+        }
     } else {
         return (
             <div>
@@ -608,30 +643,23 @@ class Course extends React.Component {
         return (
             <div>
             <div className="headding" onClick={this.toggleInputs}>{"\u25BF"} Inputs</div>
-        All inputs are saved on your device.
-        <div>
-        Course <input name="course" type="text" value={this.state.course} onChange={this.changeCourse} />
-        </div><div>
-        GWD    <input name="gwd" type="number" value={this.state.gwdInput}  step="1" min="0" max="359"   onChange={this.changeGwd} />
-        TWD {this.radToDisplay(this.state.twd)}
-        </div><div>
-        GWS    <input name="gws" type="number" value={this.state.gwsInput}   min="0"   onChange={this.changeGws} />
-        TWS {this.msToDisplay(this.state.tws)}
-        </div><div>
-        Current    <input name="current" type="number" value={this.state.currentInput}   min="0"   onChange={this.changeCurrent} />
-        </div><div>
-        Current dir    <input name="currentdeg" type="number" value={this.state.currentDirectionInput}   step="1" min="0" max="359"   onChange={this.changeCurrentDirection} />
-        </div><div>
-        Target VMG TWA Upwind  <input name="tackvmgangleInput" type="number" value={this.state.tackvmgangleInput}   step="1" min="0" max="90"   onChange={this.changeTackVMGAngle} />
-        </div><div>
-        Target VMG TWA Downwind  <input name="gybevmgangleInput" type="number" value={this.state.gybevmgangleInput}   step="1" min="90" max="180"   onChange={this.changeGybeVMGAngle} />
-        </div><div>
-        WP Radius    <input name="markradius" type="number" value={this.state.markradius}  min="0"    onChange={this.changeMarkradius} />
-        </div>
-        <div>
-        <button onClick={this.prevWp}>Previous</button>
-        <button onClick={this.nextWp}>Next</button>
-        </div>
+                <div>
+                    Course <input name="course" type="text" value={this.state.course} onChange={this.changeCourse} />
+                </div><div>
+                    <span>gwd:<input name="gwd" type="number" value={this.state.gwdInput}  step="1" min="0" max="359"   onChange={this.changeGwd} /></span>
+                    <span>gws:<input name="gws" type="number" value={this.state.gwsInput}  min="0" max="100"   onChange={this.changeGws} /></span>
+                    <span>twd:{this.radToDisplay(this.state.twd)}</span>
+                    <span>tws:{this.msToDisplay(this.state.tws)}</span>
+                </div><div>
+                    <span>Current speed:<input name="current" type="number" value={this.state.currentInput}   min="0"   max="100" onChange={this.changeCurrent} /></span>
+                    <span>dir:<input name="currentdeg" type="number" value={this.state.currentDirectionInput}   step="1" min="0" max="359"   onChange={this.changeCurrentDirection} /></span>
+                </div><div>
+                    <span>Target VMG TWA Upwind:<input name="tackvmgangleInput" type="number" value={this.state.tackvmgangleInput}   step="1" min="0" max="90"   onChange={this.changeTackVMGAngle} /></span>
+                    <span>Downwind:<input name="gybevmgangleInput" type="number" value={this.state.gybevmgangleInput}   step="1" min="90" max="180"   onChange={this.changeGybeVMGAngle} /></span>
+                </div><div>
+                    <span>WP Radius:<input name="markradius" type="number" value={this.state.markradius}  min="0"  max="100"  onChange={this.changeMarkradius} /></span>
+                    <span>Advance:<button onClick={this.prevWp}>Previous</button><button onClick={this.nextWp}>Next</button></span>
+                </div>
             </div>
        );
     } else {
@@ -663,27 +691,21 @@ class Course extends React.Component {
 
 
   render() {
-    this.updateGmap();
+    this.notifyStateListeners();
     return (
         <div className="course" >
+        {this.displayChart()}
         <hr/>
         <div>
-        Position:{this.state.position.latlon.toString("dm",3)} {this.fixStatus()}
+            <span>Position:{this.state.position.latlon.toString("dm",3)} {this.fixStatus()}</span>
+            <span>SOG:{this.msToDisplay(this.state.position.speed)}</span>
+            <span>COG:{this.radToDisplay(this.state.position.heading)}</span>
+            <span>ts:{this.state.position.timestamp}</span>
         </div>
-        <div>
-        SOG:{this.msToDisplay(this.state.position.speed)} 
-        </div>
-        <div>
-        COG:{this.radToDisplay(this.state.position.heading)}
-        </div>
-        <div>
-        ts:{this.state.position.timestamp}
-        </div>
+        {this.displayInputs()}
         {this.renderCurrent()}
         {this.displayRacePlan()}
-        {this.displayChart()}
         {this.displayMarks()}
-        {this.displayInputs()}
         <div className="headding">Weather Links</div>
         <a href="https://weatherfile.com/GBR000014&wt=KTS" >Lymington Starting Platform</a>
         <a href="https://weatherfile.com/RPR000154&wt=KTS" >Ryde Pier</a>
