@@ -89,7 +89,7 @@ class Course extends React.Component {
     this.toggleInputs = this.toggleInputs.bind(this);
     this.nextWp = this.nextWp.bind(this);
     this.prevWp = this.prevWp.bind(this);
-    if (false) {
+    if (true) {
         // real positoin
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(this.getLocation, this.positionError, {
