@@ -2,6 +2,7 @@
 
 import solentMarks from './SolentMarksCowesWeek2018.csv';
 import { LatLonSpherical as LatLon, Dms } from 'geodesy';
+import PolarPerf from './performance.js';
 
 class CoursePlan {
     constructor(props) {
@@ -9,11 +10,15 @@ class CoursePlan {
         this.course = props.course || "";
         this.gwd = +props.gwd || 0;
         this.gws = +props.gws || 0;
+        this.twd = 0;
+        this.tws = 0;
+        this.polarName = props.polarName || "pogo1250";
         this.current = props.current || 0;
         this.currentDirection = props.currentDirection || 0;
         this.markradius = +props.markradius || 50;
         this.tackvmgangle = +props.tackvmgangle || 42*Math.PI/180;
         this.gybevmgangle = +props.gybevmgangle || 142*Math.PI/180;
+        this.calcWind({});
         this.position = props.position || {
            accuracy: 0,
            altitude: null,
@@ -44,6 +49,9 @@ class CoursePlan {
             laylinedistance: null,
             laylinettg: null
         };
+        this.polars = new PolarPerf();
+        this.polars.init(this.polarName);
+        this.availablePolars = this.polars.availablePolars;
     }    
 
 
@@ -51,6 +59,11 @@ class CoursePlan {
     update(nextState, update) {
         console.log("Update:", update);
         var doBuildRoute = false, doUpdateNextMark = false, doCalcWind = false;
+        if (update.polarName) {
+            this.polars.init(update.polarName);
+            this.polarName = update.polarName;
+            doBuildRoute = true;
+        }
         if ( update.force ) {
             doCalcWind = true;
             doBuildRoute = true;
@@ -137,7 +150,7 @@ class CoursePlan {
             this.twd = this.gwd;
             this.tws = this.gws;
         } else {
-            this.twd = Math.atan2(xy[0], xy[1]);
+            this.twd = (Math.atan2(xy[0], xy[1])+2*Math.PI)%(2*Math.PI);
             this.tws = Math.sqrt(xy[0]*xy[0]+xy[1]*xy[1]);
         }
         newState.twd = this.twd;
@@ -158,11 +171,17 @@ class CoursePlan {
             console.log("ID is empty ", id);
             continue;
           }
+          var wp = this.marksDb[id.substring(0,2)];
+          var name = undefined;
+          if (wp !== undefined) {
+            name = wp.name;
+          }
           var obj =  { 
             id: id.substring(0,2),
             spec: id,
+            name: name,
             rounding: this.roundings[id.substring(2)],
-            wp: this.marksDb[id.substring(0,2)]
+            wp: wp
           };
           newroute.push(obj);
         };
@@ -207,39 +226,46 @@ class CoursePlan {
 
     updateDynamic() {
         if ( this.route.length  > 0) {
-            if ( this.twd !== undefined ) {
-                for (var i = 0; i < this.route.length; i++) {
-                    var mark = this.route[i];
-                    if ( mark.btw !== undefined ) {
-                        mark.twa = this.toRelativeAngle(this.twd - mark.btw); 
-                         // calculate the starting point of the tidal vector.
-                        // we want the layline possitions to be 5min out so multiply all speeds by 300 as speed is in m/s
-                        mark.tidePoint = mark.wp.latlon.destinationPoint(this.current*300,this.toDeg(this.currentDirection+Math.PI));
-                        if ( mark.twa < Math.PI/2 && mark.twa > -Math.PI/2 ) {
-                            // calculate the starting point of the LL
-                            mark.stbdLLStart = mark.tidePoint.destinationPoint(this.position.speed*300,this.toDeg(this.twd-this.tackvmgangle+Math.PI));
-                            mark.portLLStart = mark.tidePoint.destinationPoint(this.position.speed*300,this.toDeg(this.twd+this.tackvmgangle+Math.PI));
+            this.calcBTWDTW(this.route[0],this.position);
+            for (var i = 0; i < this.route.length; i++) {
+                var mark = this.route[i];
+                if ( mark !== undefined && mark.wp !== undefined) {
+                    mark.twa = this.toRelativeAngle(this.twd - mark.btw); 
+                    mark.polars = this.polars.calc(this.tws, mark.twa);
+                     // calculate the starting point of the tidal vector.
+                    // we want the layline possitions to be 5min out so multiply all speeds by 300 as speed is in m/s
+                    mark.tidePoint = mark.wp.latlon.destinationPoint(this.current*300,this.toDeg(this.currentDirection+Math.PI));
+                    if ( mark.twa < Math.PI/2 && mark.twa > -Math.PI/2 ) {
+                        // calculate the starting point of the LL
+                        mark.stbdLLStart = mark.tidePoint.destinationPoint(mark.polars.targets.stw*300,this.toDeg(this.twd-this.tackvmgangle+Math.PI));
+                        mark.portLLStart = mark.tidePoint.destinationPoint(mark.polars.targets.stw*300,this.toDeg(this.twd+this.tackvmgangle+Math.PI));
 
-                            mark.tack = true;
-                            // calculate the bearings to the waypoint using the tidal vector calculations
-                            mark.stbdLLBTW = mark.stbdLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
-                            mark.portLLBTW = mark.portLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
-                        } else {
-                            mark.stbdLLStart = mark.tidePoint.destinationPoint(this.position.speed*300,this.toDeg(this.twd-this.gybevmgangle+Math.PI));
-                            mark.portLLStart = mark.tidePoint.destinationPoint(this.position.speed*300,this.toDeg(this.twd+this.gybevmgangle+Math.PI));
-                            mark.tack = false;
-                            mark.stbdLLBTW = mark.stbdLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
-                            mark.portLLBTW = mark.portLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
-                        }
-                        mark.twd = this.twd;
-                        mark.tws = this.tws;
-                        mark.gwd = this.gwd;
-                        mark.gws = this.gws;
-                        mark.tackvmgangle = this.tackvmgangle;
-                        mark.gybevmgangle = this.gybevmgangle;
+                        mark.tack = true;
+                        // calculate the bearings to the waypoint using the tidal vector calculations
+                        mark.stbdLLBTW = mark.stbdLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
+                        mark.portLLBTW = mark.portLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
+                    } else {
+                        mark.stbdLLStart = mark.tidePoint.destinationPoint(mark.polars.targets.stw*300,this.toDeg(this.twd-this.gybevmgangle+Math.PI));
+                        mark.portLLStart = mark.tidePoint.destinationPoint(mark.polars.targets.stw*300,this.toDeg(this.twd+this.gybevmgangle+Math.PI));
+                        mark.tack = false;
+                        mark.stbdLLBTW = mark.stbdLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
+                        mark.portLLBTW = mark.portLLStart.rhumbBearingTo(mark.wp.latlon) * Math.PI/180;
                     }
-                }            
-            }
+                    mark.twd = this.twd;
+                    mark.tws = this.tws;
+                    mark.gwd = this.gwd;
+                    mark.gws = this.gws;
+                    mark.tackvmgangle = this.tackvmgangle;
+                    mark.gybevmgangle = this.gybevmgangle;                    
+                    mark.twdDeg = mark.twd*180/Math.PI;
+                    mark.gwdDeg = mark.gwd*180/Math.PI;
+                    mark.twaDeg = mark.twa*180/Math.PI;
+                    mark.stbdLLBTWDeg = mark.stbdLLBTW*180/Math.PI;
+                    mark.portLLBTWDeg = mark.portLLBTW*180/Math.PI;
+                    mark.tackvmgangleDeg = mark.tackvmgangle*180/Math.PI;
+                    mark.gybevmgangleDeg = mark.gybevmgangle*180/Math.PI;
+                }
+            }            
         }
     }
 
@@ -287,7 +313,6 @@ class CoursePlan {
                 nextmark.ttg = nextmark.dtw/nextmark.wcv;
             } 
             var angle, ll;
-            console.log("Next wp ", nextwp);
             if ( Math.abs(nextmark.twa) < this.tackvmgangle && nextrouteentry.portLLBTW !== undefined) {
                 // tacking required, laylines needed, there are 2 laylines,
 
@@ -390,12 +415,16 @@ class CoursePlan {
             phead.itw = shead.latlon.rhumbDistanceTo(nextwp.latlon);
             phead.tti = shead.dti/this.position.speed;
             phead.ttw = (shead.dti+shead.itw)/this.position.speed;
+        } else {
+            console.warn("No Intesect to starboard");
         }
         if ( phead.latlon !== null ) {
             phead.dti = this.position.latlon.rhumbDistanceTo(phead.latlon);
             shead.itw = phead.latlon.rhumbDistanceTo(nextwp.latlon);            
             shead.tti = phead.dti/this.position.speed;
             shead.ttw = (phead.dti+phead.itw)/this.position.speed;
+        } else {
+            console.warn("No Intesect to port");
         }
 
     }

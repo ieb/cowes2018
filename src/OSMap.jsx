@@ -663,7 +663,7 @@ class OSMap extends React.Component {
                         }),
                         new Style({
                         text: new Text({
-                            text: mark.wp.name,
+                            text: mark.name,
                             offsetX: 10,
                             offsetY: 10,
                             scale: 2,
@@ -681,7 +681,7 @@ class OSMap extends React.Component {
                 }),
                 new Style({
                         text: new Text({
-                            text: mark.wp.name,
+                            text: mark.name,
                             offsetX: 10,
                             offsetY: 10,
                             scale: 2,
@@ -791,15 +791,18 @@ class OSMap extends React.Component {
             currentMark != undefined && 
             currentMark.wp !== undefined && 
             currentMark.routeVersion !== routeVersion ) {
+            console.log("plotting laylines ", currentMark);
             currentMark.routeVersion = routeVersion;
             this.clearLines();
             // draw laylines with tidal vecotr
-            var source = this.tacticalOverlay.getSource();
+            var source = this.tacticalOverlay.getSource();// portLLCOGStyle, stbdLLCOGStyle, portLLHDGStyle, stbdLLHDGStyle
             this.updateOrcreateVector(source, currentMark.portLLStart, currentMark.wp.latlon, "PortLLGMC", this.portLLCOGStyle);
             this.updateOrcreateVector(source, currentMark.stbdLLStart, currentMark.wp.latlon, "StbdLLGMC", this.stbdLLCOGStyle);
             this.updateOrcreateVector(source, currentMark.portLLStart, currentMark.tidePoint, "PortLLHead", this.portLLHDGStyle);
             this.updateOrcreateVector(source, currentMark.stbdLLStart, currentMark.tidePoint, "StbdLLHead", this.stbdLLHDGStyle);
             this.updateOrcreateVector(source, currentMark.tidePoint, currentMark.wp.latlon, "TideVector", this.tideVectorStyle);
+        } else {
+            console.log("not plotting laylines ");
         }
     }
 
@@ -858,6 +861,7 @@ class OSMap extends React.Component {
                 ll = state.nextmark.gybell;
             }
             if ( ll !== undefined  ) {
+                console.log("Plotting Intersects");
                 if  ( ll.port !== undefined && ll.port.intersect.latlon !== null ) {
                     this.updateOrcreateVector(source, this.position.latlon, ll.port.intersect.latlon, "btwpi", this.btwStbdLLStyle);
                     this.updateOrcreateVector(source, ll.port.intersect.latlon, currentMark.wp.latlon, "btwpm", this.btwPortLLStyle2);
@@ -872,6 +876,7 @@ class OSMap extends React.Component {
 
                 }
             } else {
+                console.log("No Intersects required");
                 this.removeFeatures(source, [ "btwpi","btwpm","btwsi","btwsm"]);
             }
 

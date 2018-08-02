@@ -24,6 +24,21 @@ class Course extends React.Component {
     this.gmap = new GMap("AIzaSyC1R7_R3evqRM6gsl1MTrORvGGFtbg9BjY");
     this.addStateListener(this.gmap);
     */
+    var hash = window.location.hash;
+    if ( hash !== undefined && hash.length > 1) {
+        var parts = hash.substring(1).split(';');
+        console.log("Hash is ", hash, parts);
+        for (var i = 0; i < parts.length; i++) {
+            var kv = parts[i].split("=");
+            if ( kv[0] == "reset") {
+                console.log("Reset settings");
+                window.localStorage.clear();
+            } else if ( kv[0] === "course" ) {
+                window.localStorage.cowes2018Course = kv[1];
+                console.log("Course set to ",window.localStorage.cowes2018Course);
+            } 
+        };
+    }
     this.coursePlan = new CoursePlan({
         gwd: (+window.localStorage.cowes2018gwd || 0)*Math.PI/180,
         course: window.localStorage.cowes2018Course || "",
@@ -32,7 +47,9 @@ class Course extends React.Component {
         gybevmgangle: (+window.localStorage.cowes2018Gybeangle || 142)*Math.PI/180,
         gws: (+window.localStorage.cowes2018gws || 0)*0.514444,
         current: (+window.localStorage.cowes2018current || 0)*0.514444,
-        currentDirection: (+window.localStorage.cowes2018currentDirection || 0)*Math.PI/180
+        currentDirection: (+window.localStorage.cowes2018currentDirection || 0)*Math.PI/180,
+        polarName: window.localStorage.cowes2018polarname || "pogo1250",
+        nextmarkidx: window.localStorage.cowes2018nextmarkidx || 0
     });
     this.bouys = {
         "BY": "N BY",
@@ -41,6 +58,7 @@ class Course extends React.Component {
         "YBY": "W YBY"
     }
     this.state = {
+        polarName: this.coursePlan.polarName,
         gwd: this.coursePlan.gwd,
         gwdInput: this.coursePlan.gwd*180/Math.PI,
         gws: this.coursePlan.gws,
@@ -80,6 +98,7 @@ class Course extends React.Component {
     this.changeMarkradius = this.changeMarkradius.bind(this);
     this.changeGws = this.changeGws.bind(this);
     this.changeCurrent = this.changeCurrent.bind(this);
+    this.changePolar = this.changePolar.bind(this);
     this.changeCurrentDirection = this.changeCurrentDirection.bind(this);
     this.changeTackVMGAngle = this.changeTackVMGAngle.bind(this);
     this.changeGybeVMGAngle = this.changeGybeVMGAngle.bind(this);
@@ -169,6 +188,7 @@ class Course extends React.Component {
         this.coursePlan.update(newState, {
             position: position
         });
+        window.localStorage.cowes2018nextmarkidx = this.coursePlan.nextmarkidx;
         console.log("Possition Update");
         this.setState(newState);
     }
@@ -203,7 +223,7 @@ class Course extends React.Component {
         if ( b === undefined || b === null) {
             return "0.0";
         } 
-        return mToKn(b).toFixed(1)+" kn";
+        return mToKn(b).toFixed(2)+" kn";
     }
     durationToDisplay(d) {
         if ( d === undefined  || d === null) {
@@ -247,6 +267,9 @@ class Course extends React.Component {
                         <td></td>
                         <td></td>
                         <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                     </tr>
                     ));
         
@@ -272,7 +295,10 @@ class Course extends React.Component {
                     <td>{this.radToDisplay(r.btw)}</td>
                     <td>{this.mToDisplay(r.dtw)}</td>
                     <td>{this.mToDisplay(r.dist)}</td>
-                    <th>{this.radToDisplay(r.twa)}</th>
+                    <td>{this.radToDisplay(r.twa)}</td>
+                    <td>{this.msToDisplay(r.polars.stw)}</td>
+                    <td>{this.radToDisplay(r.polars.targets.twa)}</td>
+                    <td>{this.msToDisplay(r.polars.targets.stw)}</td>
                 </tr>
                 ));
 
@@ -291,6 +317,9 @@ class Course extends React.Component {
                         <th>DTW</th>
                         <th>Total</th>
                         <th>TWA</th>
+                        <th>STW</th>
+                        <th>TTWA</th>
+                        <th>TSTW</th>
                     </tr>
                     {rows}
 
@@ -535,6 +564,7 @@ class Course extends React.Component {
     this.coursePlan.update(newState, {
         nextmarkidx: nm
     });
+    window.localStorage.cowes2018nextmarkidx = this.coursePlan.nextmarkidx;
     this.setState(newState);
   }
   prevWp() {
@@ -544,6 +574,7 @@ class Course extends React.Component {
     this.coursePlan.update(newState, {
         nextmarkidx: nm
     });
+    window.localStorage.cowes2018nextmarkidx = this.coursePlan.nextmarkidx;
     this.setState(newState);
   }
 
@@ -638,6 +669,29 @@ class Course extends React.Component {
     this.setState({ displayInputs: !this.state.displayInputs});
   }
 
+  changePolar(e) {
+    var newState = {
+        polarName: e.target.value
+    };
+    this.coursePlan.update(newState, { polarName: e.target.value});
+    window.localStorage.cowes2018polarname = e.target.value;
+    this.setState(newState);
+  }
+
+  getPolarOptions() {
+    var options = [];
+    for (var i = 0; i < this.coursePlan.availablePolars.length; i++) {
+        var n = this.coursePlan.availablePolars[i];
+        options.push((<option key={n} value={n}>{n}</option>));
+    };
+    return (
+        <select onChange={this.changePolar} value={this.state.polarName} >
+        {options}
+        </select>
+        );
+  }
+
+
   displayInputs() {
     if ( this.state.displayInputs ) {
         return (
@@ -645,6 +699,8 @@ class Course extends React.Component {
             <div className="headding" onClick={this.toggleInputs}>{"\u25BF"} Inputs</div>
                 <div>
                     Course <input name="course" type="text" value={this.state.course} onChange={this.changeCourse} />
+                    <a href={"#course="+this.state.course} > copy url to share </a>
+                    <button onClick={this.asGPX} >get GPX</button>
                 </div><div>
                     <span>gwd:<input name="gwd" type="number" value={this.state.gwdInput}  step="1" min="0" max="359"   onChange={this.changeGwd} /></span>
                     <span>gws:<input name="gws" type="number" value={this.state.gwsInput}  min="0" max="100"   onChange={this.changeGws} /></span>
@@ -659,6 +715,9 @@ class Course extends React.Component {
                 </div><div>
                     <span>WP Radius:<input name="markradius" type="number" value={this.state.markradius}  min="0"  max="100"  onChange={this.changeMarkradius} /></span>
                     <span>Advance:<button onClick={this.prevWp}>Previous</button><button onClick={this.nextWp}>Next</button></span>
+                </div>
+                <div>
+                    {this.getPolarOptions()}
                 </div>
             </div>
        );
