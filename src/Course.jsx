@@ -4,6 +4,7 @@
 import React from 'react';
 //import GMap from './GMap.jsx';
 import OSMap from './OSMap.jsx';
+import Track from './Track.jsx';
 import CoursePlan from './CoursePlan.jsx';
 import { LatLonSpherical as LatLon, Dms } from 'geodesy';
 import Qty from 'js-quantities';
@@ -13,6 +14,17 @@ import './course.css';
 const radToDeg = Qty.swiftConverter('rad', 'deg');
 const mToNm = Qty.swiftConverter('m', 'nmi');
 const mToKn = Qty.swiftConverter('m/s', 'kn');
+const hashTrans = {
+    course: "cowes2018Course",
+    gwd: "cowes2018gwd",
+    gws: "cowes2018gws",
+    gdc: "cowes2018currentDirection",
+    gcs: "cowes2018current",
+    gv: "cowes2018Gybeangle",
+    tv: "cowes2018Tackangle",
+    pn: "cowes2018polarname",
+    id: "cowes2018nextmarkidx"
+}
 
 class Course extends React.Component {
 
@@ -24,21 +36,8 @@ class Course extends React.Component {
     this.gmap = new GMap("AIzaSyC1R7_R3evqRM6gsl1MTrORvGGFtbg9BjY");
     this.addStateListener(this.gmap);
     */
-    var hash = window.location.hash;
-    if ( hash !== undefined && hash.length > 1) {
-        var parts = hash.substring(1).split(';');
-        console.log("Hash is ", hash, parts);
-        for (var i = 0; i < parts.length; i++) {
-            var kv = parts[i].split("=");
-            if ( kv[0] == "reset") {
-                console.log("Reset settings");
-                window.localStorage.clear();
-            } else if ( kv[0] === "course" ) {
-                window.localStorage.cowes2018Course = kv[1];
-                console.log("Course set to ",window.localStorage.cowes2018Course);
-            } 
-        };
-    }
+    this.track = new Track();
+    this.loadHash();
     this.coursePlan = new CoursePlan({
         gwd: (+window.localStorage.cowes2018gwd || 0)*Math.PI/180,
         course: window.localStorage.cowes2018Course || "",
@@ -106,6 +105,11 @@ class Course extends React.Component {
     this.toggleChart = this.toggleChart.bind(this);
     this.toggleRacePlan = this.toggleRacePlan.bind(this);
     this.toggleInputs = this.toggleInputs.bind(this);
+    this.downloadTrack = this.downloadTrack.bind(this);
+    this.resetTrack = this.resetTrack.bind(this);
+
+
+
     this.nextWp = this.nextWp.bind(this);
     this.prevWp = this.prevWp.bind(this);
     if (true) {
@@ -139,6 +143,32 @@ class Course extends React.Component {
 
   }
 
+
+    loadHash() {
+        var hash = window.location.hash;
+        if ( hash !== undefined && hash.length > 1) {
+            var parts = hash.substring(1).split(';');
+            console.log("Hash is ", hash, parts);
+            for (var i = 0; i < parts.length; i++) {
+                var kv = parts[i].split("=");
+                if ( kv[0] == "reset") {
+                    console.log("Reset settings");
+                    window.localStorage.clear();
+                } else if ( hashTrans[kv[0]] !== undefined ) {
+                    window.localStorage[hashTrans[kv[0]]] = kv[1];
+                    console.log(kv[0], hashTrans[kv[0]], " set to ", kv[1]);
+                }
+            };
+        }
+
+    }
+    getHash() {
+        var kv = []
+        for( var k in hashTrans ) {
+            kv.push(k+"="+window.localStorage[hashTrans[k]]);
+        }
+        return "#"+kv.join(";");
+    }
 
 
 
@@ -185,6 +215,7 @@ class Course extends React.Component {
             position: position,
             geostate: "fix"
         }
+        this.track.update(position);
         this.coursePlan.update(newState, {
             position: position
         });
@@ -699,8 +730,9 @@ class Course extends React.Component {
             <div className="headding" onClick={this.toggleInputs}>{"\u25BF"} Inputs</div>
                 <div>
                     Course <input name="course" type="text" value={this.state.course} onChange={this.changeCourse} />
-                    <a href={"#course="+this.state.course} > copy url to share </a>
-                    <button onClick={this.asGPX} >get GPX</button>
+                    <a href={this.getHash()} > copy url to share </a>
+                    <button onClick={this.downloadTrack} >Download Track</button>
+                    <button onClick={this.resetTrack} >Reset Track</button>
                 </div><div>
                     <span>gwd:<input name="gwd" type="number" value={this.state.gwdInput}  step="1" min="0" max="359"   onChange={this.changeGwd} /></span>
                     <span>gws:<input name="gws" type="number" value={this.state.gwsInput}  min="0" max="100"   onChange={this.changeGws} /></span>
@@ -744,6 +776,12 @@ class Course extends React.Component {
   /** Google Maps plotting ---------------------------------------------------------*/
 
 
+  downloadTrack() {
+    this.track.download();
+  }
+  resetTrack() {
+    this.track.deleteAll();
+  }
 
 
 
