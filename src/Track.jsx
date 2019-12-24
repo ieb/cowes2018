@@ -63,6 +63,7 @@ class Track  {
     }
 
     deleteAll() {
+      this.history = "ts,lat,lon,cog,sog\n";
       for(var k in window.localStorage) {
         if ( k.startsWith('cowes2018track') ) {
           window.localStorage.removeItem(k);
