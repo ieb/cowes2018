@@ -1,6 +1,6 @@
 "use strict";
 
-import solentMarks from './SolentMarksCowesWeek2018.csv';
+import solentMarks from './SolentMarksCowesWeek2018.json';
 import { LatLonSpherical as LatLon, Dms } from 'geodesy';
 import PolarPerf from './performance.js';
 
@@ -121,19 +121,16 @@ class CoursePlan {
 
   // load marks from a cut and paste in the settings, or use a default
     loadMarks() {
+        console.log("loading marks from ",solentMarks);
         this.marksDb = {};
         var idx = {};
-        var cols = solentMarks[0];
-        for (var i = 0; i < cols.length; i++) {
-           idx[cols[i]] = i;
-        };
         for (var i = 1; i < solentMarks.length; i++) {
-            var cols = solentMarks[i]
-            this.marksDb[cols[idx.name]] = {
-                name: cols[idx.name],
-                desc: cols[idx.desc],
-                sym: cols[idx.sym],
-                latlon: new LatLon(cols[idx.lat], cols[idx.lon])
+            var mark = solentMarks[i]
+            this.marksDb[mark.name] = {
+                name: mark.name,
+                desc: mark.desc,
+                sym: mark.sym,
+                latlon: new LatLon(mark.lat, mark.lon)
             }
         };
     }
